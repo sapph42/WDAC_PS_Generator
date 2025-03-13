@@ -53,7 +53,7 @@ public partial class Main : Form {
         Cert CA = csCert.CA;
         string id = CA.SimpleName.Replace(" ", "_");
         string xml = string.Format(template, policyID.ToString(), version.ToString(), id, CA.RawData);
-        ciPolicy = new(xml, csCert);
+        ciPolicy = new(xml, csCert, SmartCardCheck.Checked);
         SaveFileDialog dialog = new() {
             Filter = "*.p7b"
         };
@@ -75,7 +75,7 @@ public partial class Main : Form {
             return;
         }
         Cert CA = csCert.CA;
-        ciPolicy = new(File.ReadAllBytes(dialog.FileName), csCert);
+        ciPolicy = new(File.ReadAllBytes(dialog.FileName), csCert, SmartCardCheck.Checked);
         ciPolicy.AddSigner(CA);
     }
 }
