@@ -7,12 +7,12 @@ namespace WDAC_PS_Generator.Forms;
 
 public partial class Main : Form {
     private Version version = new Version(1,0,0,0);
-    private Guid policyID = new Guid();
+    private Guid policyID = Guid.NewGuid();
     private string template = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 <SiPolicy xmlns=""urn:schemas-microsoft-com:sipolicy"" PolicyType=""Base Policy"">
-	<PolicyID>{{0}}</PolicyID>
-	<BasePolicyID>{{0}}</BasePolicyID>
-	<PlatformID>{2E07F7E4-194C-4D20-B7C9-6F44A6C5A234}</PlatformID>
+	<PolicyID>{{{0}}}</PolicyID>
+	<BasePolicyID>{{{0}}}</BasePolicyID>
+	<PlatformID>{{2E07F7E4-194C-4D20-B7C9-6F44A6C5A234}}</PlatformID>
 	<VersionEx>{1}</VersionEx>
 	<Rules />
 	<Signers>
@@ -45,6 +45,7 @@ public partial class Main : Form {
     }
     private void NewButton_Click(object sender, EventArgs e) {
         SelectCert();
+        policyID = Guid.NewGuid();
         if (csCert is null || csCert.CA is null) {
             MessageBox.Show("No CA could be found in the selected certificate trust chain.");
             return;
@@ -52,7 +53,7 @@ public partial class Main : Form {
         Cert CA = csCert.CA;
         string id = CA.SimpleName.Replace(" ", "_");
         string xml = string.Format(template, policyID.ToString(), version.ToString(), id, CA.RawData);
-        ciPolicy = new(xml);
+        ciPolicy = new(xml, csCert);
         SaveFileDialog dialog = new() {
             Filter = "*.p7b"
         };
@@ -74,7 +75,7 @@ public partial class Main : Form {
             return;
         }
         Cert CA = csCert.CA;
-        ciPolicy = new(File.ReadAllBytes(dialog.FileName));
+        ciPolicy = new(File.ReadAllBytes(dialog.FileName), csCert);
         ciPolicy.AddSigner(CA);
     }
 }

@@ -9,13 +9,16 @@ namespace WDAC_PS_Generator.Classes;
 public class CIPolicy {
     public string PolicyXml;
     public byte[] PolicyData;
-    public CIPolicy(string PolicyXml) {
+    public Cert SigningCert;
+    public CIPolicy(string PolicyXml, Cert signingCert) {
         this.PolicyXml = PolicyXml;
         PolicyData = ConvertXmlToP7b();
+        SigningCert = signingCert;
     }
-    public CIPolicy(byte[] PolicyData) {
+    public CIPolicy(byte[] PolicyData, Cert signingCert) {
         this.PolicyData = PolicyData;
         PolicyXml = ConvertP7bToXml();
+        SigningCert = signingCert;
     }
     public void AddSigner(Cert CACert) {
         XDocument xmldoc = XDocument.Parse(PolicyXml);
@@ -45,6 +48,8 @@ public class CIPolicy {
         var xmlBytes = Encoding.UTF8.GetBytes(PolicyXml);
         ContentInfo contentInfo = new(xmlBytes);
         SignedCms signedCms = new(contentInfo, detached: false);
+        CmsSigner signer = new(SigningCert.Certificate);
+        signedCms.ComputeSignature(signer);
         return signedCms.Encode();
     }
     private string ConvertP7bToXml() {
