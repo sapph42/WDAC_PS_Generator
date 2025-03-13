@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35825.156 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WSOD_PS_Generator", "WSOD_PS_Generator\WSOD_PS_Generator.csproj", "{D1610FF3-4446-40F3-BB56-6CBA03642CDA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WDAC_PS_Generator", "WDAC_PS_Generator\WDAC_PS_Generator.csproj", "{D1610FF3-4446-40F3-BB56-6CBA03642CDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
