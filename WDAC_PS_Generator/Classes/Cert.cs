@@ -14,12 +14,26 @@ public class Cert {
     }
     public Cert? Issuer => _isCA ? this : _issuerCert;
     public Cert? CA => Issuer?.Issuer;
+    public string Id => SimpleName.Replace(" ", "_");
     public bool IsCA => _isCA;
     public string RawData => BitConverter.ToString(_baseCert.RawData).Replace("-", "");
     public string SimpleName => _baseCert.GetNameInfo(X509NameType.SimpleName, false);
     public Cert(X509Certificate2 Certificate) {
         _baseCert = Certificate;
         _issuerCert = GetIssuer();
+    }
+    public static Cert? SelectCert() {
+        using X509Store store = new("MY", StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+        var allCerts = (X509Certificate2Collection)store.Certificates;
+        X509Certificate2Collection col = X509Certificate2UI.SelectFromCollection(
+            allCerts,
+            "Certificate Selection",
+            "Select a code signing certificate to extrapolate a root CA from.",
+            X509SelectionFlag.SingleSelection);
+        if (col.Count == 0)
+            return null;
+        return new Cert(col.First());
     }
     private Cert? GetIssuer() {
         if (_baseCert.IssuerName.Name == _baseCert.SubjectName.Name) {
