@@ -2,11 +2,12 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using WDAC_PS_Generator.Classes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace WDAC_PS_Generator.Forms;
 
 public partial class Main : Form {
-    private Version version = new Version(1,0,0,0);
+    private Version version = new Version(1, 0, 0, 0);
     private Guid policyID = Guid.NewGuid();
     private string template = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 <SiPolicy xmlns=""urn:schemas-microsoft-com:sipolicy"" PolicyType=""Base Policy"">
@@ -27,24 +28,12 @@ public partial class Main : Form {
 ";
     private Cert? csCert;
     private CIPolicy? ciPolicy;
+    private string lastFile = "";
     public Main() {
         InitializeComponent();
     }
-    private void SelectCert() {
-        using X509Store store = new("MY", StoreLocation.CurrentUser);
-        store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
-        var allCerts = (X509Certificate2Collection)store.Certificates;
-        X509Certificate2Collection col = X509Certificate2UI.SelectFromCollection(
-            allCerts,
-            "Certificate Selection",
-            "Select a code signing certificate to extrapolate a root CA from.",
-            X509SelectionFlag.SingleSelection);
-        if (col.Count == 0)
-            return;
-        csCert = new Cert(col.First());
-    }
     private void NewButton_Click(object sender, EventArgs e) {
-        SelectCert();
+        csCert = Cert.SelectCert();
         policyID = Guid.NewGuid();
         if (csCert is null || csCert.CA is null) {
             MessageBox.Show("No CA could be found in the selected certificate trust chain.");
@@ -61,7 +50,6 @@ public partial class Main : Form {
             return;
         File.WriteAllBytes(dialog.FileName, ciPolicy.PolicyData);
     }
-
     private void AddButton_Click(object sender, EventArgs e) {
         OpenFileDialog dialog = new() {
             Filter = "*.p7b",
@@ -69,7 +57,7 @@ public partial class Main : Form {
         };
         if (dialog.ShowDialog() != DialogResult.OK)
             return;
-        SelectCert();
+        csCert = Cert.SelectCert();
         if (csCert is null || csCert.CA is null) {
             MessageBox.Show("No CA could be found in the selected certificate trust chain.");
             return;
@@ -77,5 +65,35 @@ public partial class Main : Form {
         Cert CA = csCert.CA;
         ciPolicy = new(File.ReadAllBytes(dialog.FileName), csCert, SmartCardCheck.Checked);
         ciPolicy.AddSigner(CA);
+        File.WriteAllBytes(dialog.FileName, ciPolicy.PolicyData);
+    }
+    private void ReplaceButton_Click(object sender, EventArgs e) {
+        OpenFileDialog dialog = new() {
+            Filter = "*.p7b",
+            Title = "CIPolicy File To Modify"
+        };
+        if (dialog.ShowDialog() != DialogResult.OK)
+            return;
+        lastFile = dialog.FileName;
+        ciPolicy = new(File.ReadAllBytes(lastFile), SmartCardCheck.Checked);
+        CaSelection.DataSource = ciPolicy.GetSigners();
+        CaSelection.Visible = true;
+        CaLabel.Visible = true;
+        ExecuteReplace.Visible = true;
+    }
+
+    private void ExecuteReplace_Click(object sender, EventArgs e) {
+        string? deprecatedCA = (string?)CaSelection.SelectedValue;
+        if (string.IsNullOrWhiteSpace(deprecatedCA))
+            return;
+        if (ciPolicy is null || !ciPolicy.SetSigningCert())
+            return;
+        if (ciPolicy.SigningCert.CA is null) {
+            MessageBox.Show("No CA could be found in the selected certificate trust chain.");
+            return;
+        }
+        Cert CA = ciPolicy.SigningCert.CA;
+        ciPolicy.ReplaceSigner(deprecatedCA, CA);
+        File.WriteAllBytes(lastFile, ciPolicy.PolicyData);
     }
 }
