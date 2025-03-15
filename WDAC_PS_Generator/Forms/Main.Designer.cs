@@ -32,6 +32,7 @@
             NewButton = new Button();
             AddButton = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
+            GenerateXml = new CheckBox();
             label4 = new Label();
             label3 = new Label();
             label2 = new Label();
@@ -40,6 +41,7 @@
             CaLabel = new Label();
             CaSelection = new ComboBox();
             ExecuteReplace = new Button();
+            GenerateP7b = new CheckBox();
             tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -84,6 +86,7 @@
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333359F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333359F));
+            tableLayoutPanel1.Controls.Add(GenerateXml, 1, 6);
             tableLayoutPanel1.Controls.Add(label4, 2, 5);
             tableLayoutPanel1.Controls.Add(label3, 1, 5);
             tableLayoutPanel1.Controls.Add(label2, 0, 5);
@@ -95,6 +98,7 @@
             tableLayoutPanel1.Controls.Add(CaLabel, 1, 2);
             tableLayoutPanel1.Controls.Add(CaSelection, 1, 3);
             tableLayoutPanel1.Controls.Add(ExecuteReplace, 1, 4);
+            tableLayoutPanel1.Controls.Add(GenerateP7b, 2, 6);
             tableLayoutPanel1.Location = new Point(22, 26);
             tableLayoutPanel1.Margin = new Padding(6);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -108,6 +112,20 @@
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 85F));
             tableLayoutPanel1.Size = new Size(1449, 823);
             tableLayoutPanel1.TabIndex = 4;
+            // 
+            // GenerateXml
+            // 
+            GenerateXml.Anchor = AnchorStyles.None;
+            GenerateXml.AutoSize = true;
+            GenerateXml.Checked = true;
+            GenerateXml.CheckState = CheckState.Checked;
+            GenerateXml.Location = new Point(603, 747);
+            GenerateXml.Name = "GenerateXml";
+            GenerateXml.Size = new Size(241, 36);
+            GenerateXml.TabIndex = 5;
+            GenerateXml.Text = "Generate XML File";
+            GenerateXml.UseVisualStyleBackColor = true;
+            GenerateXml.CheckedChanged += GenerateXml_CheckedChanged;
             // 
             // label4
             // 
@@ -153,13 +171,14 @@
             // 
             // SmartCardCheck
             // 
-            SmartCardCheck.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            SmartCardCheck.Anchor = AnchorStyles.None;
             SmartCardCheck.AutoSize = true;
-            tableLayoutPanel1.SetColumnSpan(SmartCardCheck, 3);
-            SmartCardCheck.Location = new Point(6, 714);
+            SmartCardCheck.Checked = true;
+            SmartCardCheck.CheckState = CheckState.Checked;
+            SmartCardCheck.Location = new Point(49, 747);
             SmartCardCheck.Margin = new Padding(6);
             SmartCardCheck.Name = "SmartCardCheck";
-            SmartCardCheck.Size = new Size(1437, 103);
+            SmartCardCheck.Size = new Size(383, 36);
             SmartCardCheck.TabIndex = 7;
             SmartCardCheck.Text = "Use Smart Card Crypto Provider";
             SmartCardCheck.UseVisualStyleBackColor = true;
@@ -197,6 +216,20 @@
             ExecuteReplace.Visible = false;
             ExecuteReplace.Click += ExecuteReplace_Click;
             // 
+            // GenerateP7b
+            // 
+            GenerateP7b.Anchor = AnchorStyles.None;
+            GenerateP7b.AutoSize = true;
+            GenerateP7b.Checked = true;
+            GenerateP7b.CheckState = CheckState.Checked;
+            GenerateP7b.Location = new Point(1090, 747);
+            GenerateP7b.Name = "GenerateP7b";
+            GenerateP7b.Size = new Size(234, 36);
+            GenerateP7b.TabIndex = 8;
+            GenerateP7b.Text = "Generate P7B File";
+            GenerateP7b.UseVisualStyleBackColor = true;
+            GenerateP7b.CheckedChanged += GenerateP7b_CheckedChanged;
+            // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
@@ -225,5 +258,7 @@
         private Button ExecuteReplace;
         private ComboBox CaSelection;
         private Label CaLabel;
+        private CheckBox GenerateXml;
+        private CheckBox GenerateP7b;
     }
 }

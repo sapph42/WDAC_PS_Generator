@@ -9,7 +9,7 @@ namespace WDAC_PS_Generator.Forms;
 public partial class Main : Form {
     private Version version = new Version(1, 0, 0, 0);
     private Guid policyID = Guid.NewGuid();
-    private string template = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+    private const string template = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 <SiPolicy xmlns=""urn:schemas-microsoft-com:sipolicy"" PolicyType=""Base Policy"">
 	<PolicyID>{{{0}}}</PolicyID>
 	<BasePolicyID>{{{0}}}</BasePolicyID>
@@ -26,9 +26,13 @@ public partial class Main : Form {
 	</UpdatePolicySigners>
 </SiPolicy>
 ";
+    private const string p7bFilter = "PKCS#7 Binary File|*.p7b";
+    private const string xmlFilter = "XML File|*.xml";
     private Cert? csCert;
     private CIPolicy? ciPolicy;
     private string lastFile = "";
+    private bool generateXml;
+    private bool generateP7b;
     public Main() {
         InitializeComponent();
     }
@@ -48,11 +52,14 @@ public partial class Main : Form {
         };
         if (dialog.ShowDialog() != DialogResult.OK)
             return;
-        File.WriteAllBytes(dialog.FileName, ciPolicy.PolicyData);
+        if (generateP7b)
+            File.WriteAllBytes(Path.ChangeExtension(dialog.FileName, ".p7b"), ciPolicy.PolicyData);
+        if (generateXml)
+            File.WriteAllText(Path.ChangeExtension(dialog.FileName, ".xml"), ciPolicy.PolicyXml);
     }
     private void AddButton_Click(object sender, EventArgs e) {
         OpenFileDialog dialog = new() {
-            Filter = "*.p7b",
+            Filter = generateP7b ? (generateXml ? string.Join('|', p7bFilter, xmlFilter) : p7bFilter) : xmlFilter,
             Title = "CIPolicy File To Modify"
         };
         if (dialog.ShowDialog() != DialogResult.OK)
@@ -65,11 +72,14 @@ public partial class Main : Form {
         Cert CA = csCert.CA;
         ciPolicy = new(File.ReadAllBytes(dialog.FileName), csCert, SmartCardCheck.Checked);
         ciPolicy.AddSigner(CA);
-        File.WriteAllBytes(dialog.FileName, ciPolicy.PolicyData);
+        if (generateP7b)
+            File.WriteAllBytes(Path.ChangeExtension(dialog.FileName, ".p7b"), ciPolicy.PolicyData);
+        if (generateXml)
+            File.WriteAllText(Path.ChangeExtension(dialog.FileName, ".xml"), ciPolicy.PolicyXml);
     }
     private void ReplaceButton_Click(object sender, EventArgs e) {
         OpenFileDialog dialog = new() {
-            Filter = "*.p7b",
+            Filter = generateP7b ? (generateXml ? string.Join('|', p7bFilter, xmlFilter) : p7bFilter) : xmlFilter,
             Title = "CIPolicy File To Modify"
         };
         if (dialog.ShowDialog() != DialogResult.OK)
@@ -94,6 +104,19 @@ public partial class Main : Form {
         }
         Cert CA = ciPolicy.SigningCert.CA;
         ciPolicy.ReplaceSigner(deprecatedCA, CA);
-        File.WriteAllBytes(lastFile, ciPolicy.PolicyData);
+        if (generateP7b)
+            File.WriteAllBytes(Path.ChangeExtension(lastFile, ".p7b"), ciPolicy.PolicyData);
+        if (generateXml)
+            File.WriteAllText(Path.ChangeExtension(lastFile, ".xml"), ciPolicy.PolicyXml);
+    }
+    private void GenerateXml_CheckedChanged(object sender, EventArgs e) {
+        generateXml = GenerateXml.Checked;
+        if (!generateXml & !generateP7b)
+            GenerateP7b.Checked = true;
+    }
+    private void GenerateP7b_CheckedChanged(object sender, EventArgs e) {
+        generateP7b = GenerateP7b.Checked;
+        if (!generateXml & !generateP7b)
+            GenerateP7b.Checked = true;
     }
 }
